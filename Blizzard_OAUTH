@@ -1,0 +1,46 @@
+   public static string CLIENT_ID { get; set; } = "CLIENT_ID_HERE";
+
+   public static string CLIENT_SECRET { get; set; } = "CLIENT_SECRET_HERE";
+    
+    static void Main(string[] args)
+    {
+        OAUTH();
+    }
+    
+    private static void OAUTH()
+    {
+        using (var httpClient = new HttpClient())
+        {
+            using (var request = new HttpRequestMessage(new HttpMethod("POST"), "https://eu.battle.net/oauth/token"))
+            {
+                var base64authorization = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{CLIENT_ID}:{CLIENT_SECRET}"));
+                request.Headers.TryAddWithoutValidation("Authorization", $"Basic {base64authorization}");
+
+                request.Content = new StringContent("grant_type=client_credentials", Encoding.UTF8, "application/x-www-form-urlencoded");
+
+                var response = httpClient.SendAsync(request).Result;
+
+                var TOKEN = response.Content.ReadAsStringAsync().Result;
+
+                var DATA = JObject.Parse(TOKEN);
+
+                var ACCESS_TOKEN = DATA.Value<string>("access_token");
+
+                var TOKEN_TYPE = DATA.Value<string>("token_type");
+
+                var EXPIRES = DATA.Value<string>("expires_in");
+
+                var SUB = DATA.Value<string>("sub");
+
+                Console.WriteLine("access_token: " + ACCESS_TOKEN);
+
+                Console.WriteLine("token_type: " + TOKEN_TYPE);
+
+                Console.WriteLine("expires: " + EXPIRES);
+
+                Console.WriteLine("sub: " + SUB);
+
+                Console.ReadLine();
+            }
+        }
+     }
